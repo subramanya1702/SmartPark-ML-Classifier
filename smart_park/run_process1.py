@@ -63,11 +63,11 @@ def process2_pipeline(MODEL, PREPROCESSING_CONFIG, object_name):
         number_of_vehicles = int(result_string.split(b" ")[1])
         number_of_empty_parking_slots = 41 - number_of_vehicles
     except:
-        number_of_vehicles = 0
         number_of_empty_parking_slots = 41
 
-    # #S3 BUCKET UPLOADING CODE
+    # S3 BUCKET UPLOADING CODE
     object_name = object_name + filename_string
+    # TODO: Upload the input image to S3
     file_name = os.path.join(pathlib.Path(__file__).parent.resolve(), f"inference/output/{filename_string}")
     response = s3.upload_file(file_name, bucket_name, object_name)
     print(response)
@@ -92,15 +92,21 @@ def process2_pipeline(MODEL, PREPROCESSING_CONFIG, object_name):
         }
     )
 
-    last_added_parking_lot_table = dynamodb.Table('LastAddedParkingLot')
-    last_added_parking_lot_table.put_item(
+    all_parking_lots = dynamodb.Table('AllParkingLots')
+    all_parking_lots.put_item(
         Item={
             'latlon': '34.887060:-92.393710',
-            'timestamp': str_timestamp
+            'parking_lot_name': 'Tebeau Hall',
+            'empty_parking_spaces': str(number_of_empty_parking_slots),
+            'total_parking_spaces': '41',
+            'timestamp': str_timestamp,
+            'image_url': http_url,
+            'parking_lot_time_limit': "2 Hr Parking [ 8.30 am to 5.30 am]",
+            'parking_charges': 'Pay at Pay Station [ 2$ per Hr ]'
         }
     )
 
-    print("record inserted in dynamodb")
+    print("Records inserted to dynamodb")
 
 
 if __name__ == "__main__":
