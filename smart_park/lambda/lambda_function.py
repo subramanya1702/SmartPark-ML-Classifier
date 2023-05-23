@@ -24,6 +24,7 @@ def lambda_handler(event, context):
     dynamodb_responses = []
     for item in all_parking_lots_response['Items']:
         if validate_dynamodb_response(item):
+            print("Required field(s) missing in the dynamodb response.")
             return get_error_response_object(response_object)
 
         latlon = item['latlon'].split(':')
@@ -36,7 +37,7 @@ def lambda_handler(event, context):
             "timestamp": str(datetime.datetime.fromtimestamp(int(item['timestamp']))),
             "image_url": item['original_image_url'],
             "parking_lot_time_limit": item['parking_lot_time_limit'],
-            "parking_charges": item['parking_charges']
+            "parking_charges": int(item['parking_charges'])
         }
         dynamodb_responses.append(dynamodb_response)
 
@@ -59,11 +60,11 @@ def get_error_response_object(response_object):
 
 
 def validate_dynamodb_response(item):
-    is_valid = True
+    is_not_valid = False
 
     for field in required_fields:
         if field not in item:
             print("ERROR: Field: {0} is missing in item: {1}\n".format(field, item))
-            is_valid = False
+            is_not_valid = True
 
-    return is_valid
+    return is_not_valid
