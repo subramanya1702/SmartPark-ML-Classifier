@@ -5,11 +5,7 @@ import cv2
 import numpy as np
 
 
-def pre_process(fetched_image, original_image_dir_path, preprocess_image_dir_path, filename):
-    config_obj = configparser.ConfigParser()
-    config_obj.read("config/config.ini")
-    PREPROCESSING_CONFIG = config_obj["PRE_PROCESSING_BOUNDS"]
-
+def pre_process(PREPROCESSING_CONFIG, fetched_image, original_image_dir_path, preprocess_image_dir_path, filename):
     x_coordinate = PREPROCESSING_CONFIG["x-coordinate"]
     y_coordinate = PREPROCESSING_CONFIG["y-coordinate"]
     height = PREPROCESSING_CONFIG["height"]
@@ -50,4 +46,3 @@ def pre_process(fetched_image, original_image_dir_path, preprocess_image_dir_pat
     poly_image = cv2.fillPoly(pre_processed_image, [pts], (255, 255, 255))
     cv2.imwrite(os.path.join(preprocess_image_dir_path, filename), pre_processed_image)
     print(f"the preprocessed image is stored at {preprocess_image_dir_path}")
-    return poly_image

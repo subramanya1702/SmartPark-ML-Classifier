@@ -7,7 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1vHs5S8M8Siu6Vdqa2T74fzWEpjaL8ZN7
 """
 import base64
-import configparser
 import os
 import pathlib
 import subprocess
@@ -15,24 +14,25 @@ import time
 import uuid
 
 import boto3
+import yaml
 
 from my_utils.image_fetcher import image_fetcher
 from my_utils.preprocess3 import pre_process
 
 
-def process2_pipeline(MODEL, PREPROCESSING_CONFIG, original_object_folder, prediction_object_folder):
-    url = "https://www.youtube.com/watch?v=e9LYewJGQlk"
-
+def process2_pipeline(parking_lot, MODEL, PREPROCESSING_CONFIG, original_object_folder, prediction_object_folder):
     # IMAGE FETCHER SCRIPT
-    fetched_image, filename_string, timestamp = image_fetcher(url)
+    fetched_image, filename_string, timestamp = image_fetcher(parking_lot["source_url"])
 
     # Setting the path for saving the fetched and preprocessed images.
     original_image_dir_path = PREPROCESSING_CONFIG["original-image"]
     preprocess_image_dir_path = PREPROCESSING_CONFIG["preprocessed-image-dir-save-path"]
 
     # Sending the image to preprocessing script
-    pre_processed_image = pre_process(fetched_image, original_image_dir_path, preprocess_image_dir_path,
-                                      filename_string)
+    pre_process(PREPROCESSING_CONFIG, fetched_image,
+                original_image_dir_path,
+                preprocess_image_dir_path,
+                filename_string)
 
     # Setting the directory path to fetch the image for detection
     source = preprocess_image_dir_path + filename_string
@@ -46,7 +46,7 @@ def process2_pipeline(MODEL, PREPROCESSING_CONFIG, original_object_folder, predi
         '--source',
         source,
         '--img-size',
-        MODEL["img-size"],
+        str(MODEL["img-size"]),
         '--conf-thres',
         '0.68'
     ]
@@ -61,10 +61,10 @@ def process2_pipeline(MODEL, PREPROCESSING_CONFIG, original_object_folder, predi
     print(result_string)
     try:
         number_of_vehicles = int(result_string.split(b" ")[1])
-        number_of_empty_parking_slots = 41 - number_of_vehicles
-    except:
+        number_of_empty_parking_slots = parking_lot["spaces"] - number_of_vehicles
+    except Exception:
         print("Exception while processing the model output. Setting the number of available parking slots to 0")
-        number_of_empty_parking_slots = 41
+        number_of_empty_parking_slots = parking_lot["spaces"]
 
     # Upload original image to S3
     original_object = original_object_folder + filename_string
@@ -93,15 +93,15 @@ def process2_pipeline(MODEL, PREPROCESSING_CONFIG, original_object_folder, predi
     # Insert to DynamoDb
     str_timestamp = str(int(timestamp))
     common_request_body = {
-        'latlon': '44.56298278509426:-123.27235573138302',
-        'parking_lot_name': 'Tebeau Hall',
+        'latlon': str(parking_lot["latitude"]) + ":" + str(parking_lot["longitude"]),
+        'parking_lot_name': parking_lot["name"],
         'empty_parking_spaces': str(number_of_empty_parking_slots),
-        'total_parking_spaces': '41',
+        'total_parking_spaces': str(parking_lot["spaces"]),
         'timestamp': str_timestamp,
         'original_image_url': original_http_url,
         'prediction_image_url': prediction_http_url,
-        'parking_lot_time_limit': "2 Hr Parking [ 8.30 am to 5.30 am]",
-        'parking_charges': 'Pay at Pay Station [ 2$ per Hr ]'
+        'parking_lot_time_limit': parking_lot["time_limit"],
+        'parking_charges': str(parking_lot["charges"])
     }
 
     # Insert the record to AllParkingLots table
@@ -124,14 +124,14 @@ def process2_pipeline(MODEL, PREPROCESSING_CONFIG, original_object_folder, predi
 
 
 if __name__ == "__main__":
-    # Read config.ini file
-    config_obj = configparser.ConfigParser()
-    config_obj.read("config/config.ini")
+    # Read and extract configuration from config.yml
+    with open('config/config.yml', 'r') as file:
+        sp_config = yaml.safe_load(file)
 
-    MODEL = config_obj["MODEL_INPUTS"]
-    AWS_CREDENTIALS = config_obj["AWS_CREDS"]
-    AWS_ENV = config_obj["AWS_ENV"]
-    PREPROCESSING_CONFIG = config_obj["PRE_PROCESSING_BOUNDS"]
+    MODEL = sp_config["model-inputs"]
+    AWS_CREDENTIALS = sp_config["aws"]["credentials"]
+    AWS_ENV = sp_config["aws"]["environment"]
+    PREPROCESSING_CONFIG = sp_config["pre-processing-bounds"]
     ACCESS_KEY = base64.b64decode(AWS_CREDENTIALS["access_key"]).decode('utf-8')
     SECRET_KEY = base64.b64decode(AWS_CREDENTIALS["secret_key"]).decode('utf-8')
 
@@ -143,12 +143,16 @@ if __name__ == "__main__":
     dynamodb = boto3.resource("dynamodb", aws_access_key_id=ACCESS_KEY, aws_secret_access_key=SECRET_KEY,
                               region_name="us-east-1")
 
+    parking_lots = sp_config["parking-lots"]
+
     n = 0
     while True:
         print(f"Iteration {n}")
         start = time.time()
 
-        process2_pipeline(MODEL, PREPROCESSING_CONFIG, original_object_name, prediction_object_name)
+        # TODO: Execute different parking lots parallely
+        for parking_lot in parking_lots:
+            process2_pipeline(parking_lot, MODEL, PREPROCESSING_CONFIG, original_object_name, prediction_object_name)
 
         end = time.time()
         diff = end - start

@@ -1,0 +1,43 @@
+model-inputs:
+  weights: X-512.pt
+  output: /inference/output/
+  img-size: 512
+  conf-thres: 0.1
+  iou-thres: 0.5
+  device:
+  view-img: False
+  save-txt: False
+  classes:
+  agnostic-nms: False
+  augment: False
+  update: False
+  fixed-colors: False
+  ped-count: False
+
+aws:
+  credentials:
+    access_key: QUtJQTRFTkROTjRNR0ZUWFZBQ0U=
+    secret_key: Q290RWV2WTdwZlpTMmFoRVVXbE5sT1BJMXlaektqV0tpZEpkdzNySg==
+  environment:
+    s3_bucket_name: detectionlog
+    s3_original_object_name: original_images/
+    s3_prediction_object_name: prediction_images/
+
+pre-processing-bounds:
+  x-coordinate: 920
+  y-coordinate: 658
+  height: 420
+  width: 1918
+  original-image: pre_processed_image/
+  preprocessed-image-dir-save-path: images/
+
+parking-lots:
+  - name: Tebeau Hall
+    source_url: https://www.youtube.com/watch?v=e9LYewJGQlk
+    latitude: 44.56298278509426
+    longitude: -123.27235573138302
+    spaces: 41
+    time_limit: 2 Hr Parking [ 8.30 am to 5.30 am]
+    charges: 2
+
+
