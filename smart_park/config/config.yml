@@ -16,8 +16,8 @@ model-inputs:
 
 aws:
   credentials:
-    access_key: QUtJQTRFTkROTjRNR0ZUWFZBQ0U=
-    secret_key: Q290RWV2WTdwZlpTMmFoRVVXbE5sT1BJMXlaektqV0tpZEpkdzNySg==
+    access_key: <BAS64_ENCODED_ACCESS_KEY>
+    secret_key: <BAS64_ENCODED_SECRET_KEY>
   environment:
     s3_bucket_name: detectionlog
     s3_original_object_name: original_images/
