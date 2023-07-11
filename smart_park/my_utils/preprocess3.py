@@ -1,11 +1,12 @@
-import configparser
 import os
 
 import cv2
 import numpy as np
 
 
-def pre_process(PREPROCESSING_CONFIG, fetched_image, original_image_dir_path, preprocess_image_dir_path, filename):
+def pre_process(PREPROCESSING_CONFIG, fetched_image, filename):
+    original_image_dir_path = PREPROCESSING_CONFIG["original-image"]
+    preprocess_image_dir_path = PREPROCESSING_CONFIG["preprocessed-image-dir-save-path"]
     x_coordinate = PREPROCESSING_CONFIG["x-coordinate"]
     y_coordinate = PREPROCESSING_CONFIG["y-coordinate"]
     height = PREPROCESSING_CONFIG["height"]
