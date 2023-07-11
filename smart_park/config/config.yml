@@ -14,15 +14,6 @@ model-inputs:
   fixed-colors: False
   ped-count: False
 
-aws:
-  credentials:
-    access_key: <BAS64_ENCODED_ACCESS_KEY>
-    secret_key: <BAS64_ENCODED_SECRET_KEY>
-  environment:
-    s3_bucket_name: detectionlog
-    s3_original_object_name: original_images/
-    s3_prediction_object_name: prediction_images/
-
 pre-processing-bounds:
   x-coordinate: 920
   y-coordinate: 658
@@ -30,6 +21,9 @@ pre-processing-bounds:
   width: 1918
   original-image: pre_processed_image/
   preprocessed-image-dir-save-path: images/
+
+mongodb:
+  connection-string: mongodb://127.0.0.1:27017
 
 parking-lots:
   - name: Tebeau Hall
