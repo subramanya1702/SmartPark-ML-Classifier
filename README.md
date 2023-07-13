@@ -69,28 +69,17 @@ Don’t panic! We have all the resources to create one.
       10. Launch the instance
       11. Connect to the instance through SSH
 2. Install docker by following the instructions [here](https://docs.docker.com/engine/install/ubuntu/)
-3. Clone the SmartPark repository from [here](https://github.com/subramanya1702/Smart-Park-Reboot). Before proceeding further, we need to make changes to a config file. Open SmartPark folder that you just cloned and navigate to smart_park → config. Open config.yml file and replace the following properties with your AWS account’s BASE64 encoded access and secret keys. (This [tool](https://www.base64encode.org/) might be helpful)
-    ```sh
-    aws:
-      credentials:
-        access_key: <BAS64_ENCODED_ACCESS_KEY>
-        secret_key: <BAS64_ENCODED_SECRET_KEY>
-    ```
-    If you are doing this on a remote server(EC2), copy the SmartPark repository from your local machine to the remote server (scp utility will be helpful). You can of course clone the repository in the remote server, but you would have to go through the pain of installing git and configuring your credentials for it to work. So, copying from your local machine is a better choice.
-
+3. Clone the SmartPark repository from [here](https://github.com/subramanya1702/Smart-Park-Reboot).
 4. Now that everything is set up, we can go ahead and create/build a docker image
     ```sh
     sudo docker build -t <image_name> .
     ```
-   
-5. Run a docker container using the newly created image. The command will launch a new container in detached mode.
+5. Copy the image to wherever necessary/convenient.
+6. Run a docker container using the newly copied image. The command will launch a new container in detached mode.
     ```sh
-    sudo docker run -d --restart always <image_name>
+    docker run -d --restart always <filename>
     ```
-
-6. Verify if the prediction images are getting uploaded to S3 bucket detectionlog and new records are being inserted to DynamoDB table ParkingLotLog.
-
-7. You are all set!
+7. Don't forget to deallocate any resources that were provisioned on AWS.
 
 ## Contributors
 Subramanya Keshavamurthy
