@@ -40,10 +40,14 @@ class RunProcess:
             self.__model_inputs = __sp_config["model-inputs"]
             self.__pre_processing_config = __sp_config["pre-processing-bounds"]
             self.__parking_lots = __sp_config["parking-lots"]
-            self.__mongo_connection_string = __sp_config["mongodb"]["connection-string"]
 
-            __mongo_client = MongoClient(self.__mongo_connection_string)
-            self.__connection_obj = __mongo_client['plv_detection_data']
+            if os.getenv('DB_CONN_STR') is not None:
+                self.__mongo_connection_string = "mongodb://" + os.getenv('DB_CONN_STR')
+            else:
+                self.__mongo_connection_string = __sp_config["mongodb"]["connection-string"]
+
+            mongo_client = MongoClient(self.__mongo_connection_string)
+            self.__connection_obj = mongo_client['plv_detection_data']
         except Exception:
             print("Error while parsing config.")
             exit(1)
