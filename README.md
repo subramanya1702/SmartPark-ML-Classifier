@@ -39,12 +39,19 @@ Note: The following sections guide you through the process of executing the ingr
    
 8. Run a docker container using the newly generated image. The command will launch a new container in detached mode.
     ```sh
-    docker run -d --restart always <filename>
+    docker run -d --env DB_CONN_STR=HOSTNAME --name spclassifier --restart always <image_name>
     ```
+    DB_CONN_STR is an optional environment variable that has to be passed when the node js application and database are running on different
+    servers.
+    If not, it can be skipped.
+    Example:
+    
+    * Using database server's DNS: `DB_CONN_STR=db.domain.com:{port}`
+    * Using database server's public/external IP: `DB_CONN_STR=x.x.x.x:{port}`
 
 9. Inspect the container logs and verify if the pipeline is running without any errors
     ```sh
-    docker logs -f --tail 500 <image-id>
+    docker logs -f --tail 500 spclassifier
     ```
 
 10. Upon successful completion of the above steps, you should be able to observe new prediction images in detectionlog S3 bucket, as well as new records in the ParkingLotLog DynamoDB table.
@@ -72,13 +79,21 @@ Don’t panic! We have all the resources to create one.
 3. Clone the SmartPark repository from [here](https://github.com/subramanya1702/Smart-Park-Reboot).
 4. Now that everything is set up, we can go ahead and create/build a docker image
     ```sh
-    sudo docker build -t <image_name> .
+    sudo docker build -t spclassifier .
     ```
 5. Copy the image to wherever necessary/convenient.
 6. Run a docker container using the newly copied image. The command will launch a new container in detached mode.
     ```sh
-    docker run -d --restart always <filename>
+    sudo docker run -d --env DB_CONN_STR=HOSTNAME --name spclassifier --restart always spclassifier
     ```
+    DB_CONN_STR is an optional environment variable that has to be passed when the node js application and database are running on different
+    servers.
+    If not, it can be skipped.
+    Example:
+    
+    * Using database server's DNS: `DB_CONN_STR=db.domain.com:{port}`
+    * Using database server's public/external IP: `DB_CONN_STR=x.x.x.x:{port}`
+
 7. Don't forget to deallocate any resources that were provisioned on AWS.
 
 ## Contributors
