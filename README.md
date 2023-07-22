@@ -20,7 +20,7 @@ Below is a reworked architecture diagram.
 The following sections guide you through the process of executing the **ingress pipeline** as a docker container.
 An already built image can be found [here](https://oregonstate.app.box.com/folder/209117371306)
 
-Note: For more information about egress pipeline including MongoDb, check out this [GitHub repository]((https://github.com/subramanya1702/Smart-Park-Server)) 
+Note: For more information about egress pipeline including MongoDb, check out this [GitHub repository](https://github.com/subramanya1702/Smart-Park-Server)
 
 ## Usage
 The usage instructions have been split into two parts, depending on whether the Egress pipeline's Docker image is pre-built or not.
