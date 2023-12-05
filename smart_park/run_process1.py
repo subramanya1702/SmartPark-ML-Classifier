@@ -52,7 +52,7 @@ class RunProcess:
             print("Error while parsing config.")
             exit(1)
 
-    def __insert_to_mongodb(self, parking_lot, filename_string, number_of_empty_parking_slots, timestamp):
+    def __insert_to_mongodb(self, parking_lot, filename_string, number_of_empty_parking_spaces, timestamp):
         pre_processed_image_file_name = os.path.join(pathlib.Path(__file__).parent.resolve(),
                                                      f"pre_processed_image/{filename_string}")
         output_image_file_name = os.path.join(pathlib.Path(__file__).parent.resolve(),
@@ -71,7 +71,7 @@ class RunProcess:
             'latitude': str(parking_lot["latitude"]),
             'longitude': str(parking_lot["longitude"]),
             'name': parking_lot["name"],
-            'emptySpaces': number_of_empty_parking_slots,
+            'emptySpaces': number_of_empty_parking_spaces,
             'totalSpaces': parking_lot["spaces"],
             'timestamp': int(timestamp),
             'ogImage': og_image_bytes.getvalue(),
@@ -87,14 +87,12 @@ class RunProcess:
         # Insert the record to RecentParkingLots collection
         recent_parking_lots_collection = self.__connection_obj['recentParkingLots']
         query_filter = {
-            'latitude': str(parking_lot["latitude"]),
-            'longitude': str(parking_lot["longitude"])
+            'name': str(parking_lot["name"])
         }
         existing_parking_lot = recent_parking_lots_collection.find_one(query_filter)
 
         if existing_parking_lot:
-            common_request_body['_id'] = existing_parking_lot['_id']
-            common_request_body['id'] = existing_parking_lot['id']
+            common_request_body["_id"] = existing_parking_lot["_id"]
             recent_parking_lots_collection.replace_one(query_filter, common_request_body)
         else:
             recent_parking_lots_collection.insert_one(common_request_body)
@@ -143,12 +141,15 @@ class RunProcess:
         print(result_string)
         try:
             number_of_vehicles = int(result_string.split(b" ")[1])
-            number_of_empty_parking_slots = parking_lot["spaces"] - number_of_vehicles
+            number_of_empty_parking_spaces = parking_lot["spaces"] - number_of_vehicles
         except Exception:
             print("Exception while processing the model output. Setting the number of available parking slots to 0")
-            number_of_empty_parking_slots = parking_lot["spaces"]
+            number_of_empty_parking_spaces = parking_lot["spaces"]
 
-        self.__insert_to_mongodb(parking_lot, filename_string, number_of_empty_parking_slots, timestamp)
+        if number_of_empty_parking_spaces < 0:
+            number_of_empty_parking_spaces = 0
+
+        self.__insert_to_mongodb(parking_lot, filename_string, number_of_empty_parking_spaces, timestamp)
 
     def run(self):
         n = 0
